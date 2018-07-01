@@ -57,4 +57,5 @@ export default class CartService{
         this.cart.splice( index , 1 );
     }
 
+    
 }

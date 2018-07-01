@@ -98,8 +98,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _controllers_CatalogueController__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./controllers/CatalogueController */ "./application/controllers/CatalogueController.js");
 /* harmony import */ var _controllers_PhoneController__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./controllers/PhoneController */ "./application/controllers/PhoneController.js");
 /* harmony import */ var _controllers_CartController__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./controllers/CartController */ "./application/controllers/CartController.js");
-/* harmony import */ var _services_CartService__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./services/CartService */ "./application/services/CartService.js");
-/* harmony import */ var _services_PhoneService__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./services/PhoneService */ "./application/services/PhoneService.js");
+/* harmony import */ var _controllers_SearchController__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./controllers/SearchController */ "./application/controllers/SearchController.js");
+/* harmony import */ var _services_CartService__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./services/CartService */ "./application/services/CartService.js");
+/* harmony import */ var _services_PhoneService__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./services/PhoneService */ "./application/services/PhoneService.js");
 
 
 //====================CONTROLLERS===========================//
@@ -107,7 +108,9 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 //====================SERVICES==============================//
+
 
 
 
@@ -120,16 +123,23 @@ angular.module('PhoneApplication.controllers')
         ['$scope' , 'CartService' , _controllers_CartController__WEBPACK_IMPORTED_MODULE_2__["default"]]
     );
 
-angular.module('PhoneApplication.services')
-    .service( 'CartService'  , _services_CartService__WEBPACK_IMPORTED_MODULE_3__["default"]);
+angular.module('PhoneApplication.controllers')
+    .controller(
+        'SearchController' ,
+        ['$scope' , 'PhoneService' , _controllers_SearchController__WEBPACK_IMPORTED_MODULE_3__["default"]]
+    );
 
 angular.module('PhoneApplication.services')
-    .service( 'PhoneService'  , _services_PhoneService__WEBPACK_IMPORTED_MODULE_4__["default"]);
+    .service( 'CartService'  , _services_CartService__WEBPACK_IMPORTED_MODULE_4__["default"]);
+
+angular.module('PhoneApplication.services')
+    .service( 'PhoneService'  , _services_PhoneService__WEBPACK_IMPORTED_MODULE_5__["default"]);
 
 let app = angular.module('PhoneApplication',[
     'ngRoute',
     'PhoneApplication.controllers',
     'PhoneApplication.services'
+
 ]);
 
 
@@ -139,6 +149,13 @@ app.config( [ '$routeProvider' , '$locationProvider'  , ($routeProvider , $locat
     $locationProvider.html5Mode(true);
 
     $routeProvider.when('/' , {
+
+        templateUrl: 'templates/catalogue.html',
+        controller: [  '$scope' , 'PhoneService' , _controllers_CatalogueController__WEBPACK_IMPORTED_MODULE_0__["default"] ]
+
+    });
+
+    $routeProvider.when('/search' , {
 
         templateUrl: 'templates/catalogue.html',
         controller: [  '$scope' , 'PhoneService' , _controllers_CatalogueController__WEBPACK_IMPORTED_MODULE_0__["default"] ]
@@ -202,17 +219,18 @@ class CatalogueController{
 
     constructor( $scope , PhoneService){
 
+        $scope.phones = PhoneService.getPhonesInApp();
 
-        PhoneService.getPhones(`phones/phones.json`)
-            .then( phones => {
-                console.log('phones' , phones);
-                $scope.phones = phones;
-                $scope.$apply();
+      // PhoneService.getPhones(`phones/phones.json`, "")
+            //.then( phones => {
+                //console.log('phones' , phones);
+                //$scope.phones = phones;
+                //$scope.$apply();
 
-            } )
-            .catch( error => {
-                console.log("EXCEPTION: " , error)
-            } )
+           // } )
+            //.catch( error => {
+                //console.log("EXCEPTION: " , error)
+            //} )
 
 
     }//constructor
@@ -264,6 +282,39 @@ class PhoneController{
         $scope.thumbnail = photo;
 
     }//_setThumbnail
+
+}
+
+/***/ }),
+
+/***/ "./application/controllers/SearchController.js":
+/*!*****************************************************!*\
+  !*** ./application/controllers/SearchController.js ***!
+  \*****************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return SearchController; });
+
+
+class SearchController{
+
+    constructor($scope, PhoneService){
+
+        $scope.searchChange = function ( ){
+            var text = document.getElementById("searchText").value;
+            //alert(text);
+            PhoneService.seachPhones(text);
+        };
+        $scope.searchBack = function ( ){
+
+            PhoneService.seachPhones("");
+        };
+    }
+
+
 
 }
 
@@ -338,6 +389,7 @@ class CartService{
         this.cart.splice( index , 1 );
     }
 
+    
 }
 
 
@@ -360,23 +412,55 @@ class PhoneService{
     constructor( $http ){
 
         this.$http = $http;
+        this.allPhones=[];
+        this.phonesInApp=[];
+
+        $http.get(`phones/phones.json`)
+            .then( response => {
+                this.allPhones = response.data;
+
+                for ( let i = 0 ; i <this.allPhones.length ;  i++ ){
+
+
+                    this.phonesInApp.push(this.allPhones[i]);
+
+                }//for i
+            } )
+            .catch( error => {
+                console.log("EXCEPTION: " , error)
+            } )
+
 
     }
 
-    async getPhones( url ){
+    getPhonesInApp(){
+        alert(this.phonesInApp.length);
+        return this.phonesInApp;
+    }
+    seachPhones( seachString ){
 
-        try{
-            let result = await this.$http.get( url );
 
-            return result.data;
+        let searchPhones = [];
+        if(seachString===""){
 
-        }//try
-        catch(ex){
+            this.phonesInApp = this.allPhones;
+        }//if
+        else{
+            for ( let i = 0 ; i < this.phonesInApp.length ;  i++ ){
 
-            console.log("Exception: getPhones" , ex);
-            return [];
+                let p = this.phonesInApp[i];
 
-        }//catch
+                if(p.name.indexOf(seachString)>-1 ) {
+
+                    searchPhones.push(p);
+                }//if
+
+            }//for i
+
+            this.phonesInApp = searchPhones;
+            //alert(this.phonesInApp.length);
+            }//else
+
     }
 
     async getSinglePhone( url ){
@@ -396,6 +480,8 @@ class PhoneService{
         }//catch
 
     }
+
+
 
 }
 

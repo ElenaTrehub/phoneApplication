@@ -4,15 +4,14 @@
     <meta charset="UTF-8">
     <base href="/phoneApplication/public/" >
 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bo
-    otstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link rel="stylesheet" href="css/app.css">
 
     <script src="../node_modules/angular/angular.js" ></script>
     <script src="../node_modules/angular-route/angular-route.js" ></script>
 
     <script src="js/index.js" ></script>
-git
+
     <title> Phones - application. AngularJS </title>
 
 </head>
@@ -28,10 +27,20 @@ git
                 <div class="col-md-2">
                     <!--Sidebar content-->
 
-                    <section>
+                    <section ng-controller="SearchController">
                         <p>
                             Search:
-                            <input>
+                            <input type="text" id="searchText" >
+                            <a ng-href="/phoneApplication/public/search">
+                                <button  ng-click="searchChange()">
+                                 Искать...
+                                </button>
+                            </a>
+                            <a ng-href="/phoneApplication/public/">
+                                <button  ng-click="searchBack()">
+                                    Вернуться в каталог...
+                                </button>
+                            </a>
                         </p>
 
                         <p>
