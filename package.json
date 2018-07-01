@@ -20,6 +20,7 @@
   "homepage": "https://github.com/ElenaTrehub/phoneApplication#readme",
   "devDependencies": {
     "angular": "^1.7.2",
+    "angular-cookies": "^1.7.2",
     "angular-route": "^1.7.2",
     "webpack": "^4.14.0",
     "webpack-cli": "^3.0.8",

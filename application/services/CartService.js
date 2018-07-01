@@ -3,9 +3,9 @@
 
 export default class CartService{
 
-    constructor(  ){
+    constructor($cookies){
 
-       this.cart = [];
+        this.cart = [];
 
     }
 
@@ -21,6 +21,7 @@ export default class CartService{
 
         if(!exists){
             this.cart.push( this._getSimplePhone( phone ) );
+            $cookies.phones.push(this._getSimplePhone( phone ));
         }//if
         else{
 
@@ -39,7 +40,7 @@ export default class CartService{
             }//for i
 
         }//else
-
+        console.log('phones' , $cookies.phones);
     }
 
     _getSimplePhone( phone ){

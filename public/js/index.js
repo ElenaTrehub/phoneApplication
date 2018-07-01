@@ -138,7 +138,8 @@ angular.module('PhoneApplication.services')
 let app = angular.module('PhoneApplication',[
     'ngRoute',
     'PhoneApplication.controllers',
-    'PhoneApplication.services'
+    'PhoneApplication.services',
+    'ngCookies'
 
 ]);
 
@@ -258,6 +259,7 @@ class PhoneController{
         let id = $routeParams.phoneID;
 
         $scope.addPhoneToCart = function ( phone ){
+
             CartService.addPhone( phone );
         };
 
@@ -335,9 +337,9 @@ __webpack_require__.r(__webpack_exports__);
 
 class CartService{
 
-    constructor(  ){
+    constructor($cookies){
 
-       this.cart = [];
+        this.cart = [];
 
     }
 
@@ -353,6 +355,7 @@ class CartService{
 
         if(!exists){
             this.cart.push( this._getSimplePhone( phone ) );
+            $cookies.phones.push(this._getSimplePhone( phone ));
         }//if
         else{
 
@@ -371,7 +374,7 @@ class CartService{
             }//for i
 
         }//else
-
+        console.log('phones' , $cookies.phones);
     }
 
     _getSimplePhone( phone ){
@@ -434,7 +437,7 @@ class PhoneService{
     }
 
     getPhonesInApp(){
-        alert(this.phonesInApp.length);
+
         return this.phonesInApp;
     }
     seachPhones( seachString ){

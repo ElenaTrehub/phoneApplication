@@ -35,7 +35,8 @@ angular.module('PhoneApplication.services')
 let app = angular.module('PhoneApplication',[
     'ngRoute',
     'PhoneApplication.controllers',
-    'PhoneApplication.services'
+    'PhoneApplication.services',
+    'ngCookies'
 
 ]);
 

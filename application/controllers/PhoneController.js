@@ -7,6 +7,7 @@ export  default class PhoneController{
         let id = $routeParams.phoneID;
 
         $scope.addPhoneToCart = function ( phone ){
+
             CartService.addPhone( phone );
         };
 
