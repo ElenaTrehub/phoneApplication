@@ -36,20 +36,10 @@
                 <div class="col-md-2">
                     <!--Sidebar content-->
 
-                    <section ng-controller="SearchController">
+                    <section ng-controller="ExampleController" >
                         <p>
                             Search:
-                            <input type="text" id="searchText" >
-                            <a ng-href="/phoneApplication/public/search">
-                                <button  ng-click="searchChange()">
-                                 Искать...
-                                </button>
-                            </a>
-                            <a ng-href="/phoneApplication/public/">
-                                <button  ng-click="searchBack()">
-                                    Вернуться в каталог...
-                                </button>
-                            </a>
+                            <input ng-model="searchObject.searchString" >
                         </p>
 
                         <p>

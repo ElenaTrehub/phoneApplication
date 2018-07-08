@@ -98,9 +98,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _controllers_CatalogueController__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./controllers/CatalogueController */ "./application/controllers/CatalogueController.js");
 /* harmony import */ var _controllers_PhoneController__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./controllers/PhoneController */ "./application/controllers/PhoneController.js");
 /* harmony import */ var _controllers_CartController__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./controllers/CartController */ "./application/controllers/CartController.js");
-/* harmony import */ var _controllers_SearchController__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./controllers/SearchController */ "./application/controllers/SearchController.js");
-/* harmony import */ var _services_CartService__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./services/CartService */ "./application/services/CartService.js");
-/* harmony import */ var _services_PhoneService__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./services/PhoneService */ "./application/services/PhoneService.js");
+/* harmony import */ var _services_CartService__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./services/CartService */ "./application/services/CartService.js");
+/* harmony import */ var _services_PhoneService__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./services/PhoneService */ "./application/services/PhoneService.js");
+/* harmony import */ var _filters_SearchPhonesFilter__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./filters/SearchPhonesFilter */ "./application/filters/SearchPhonesFilter.js");
+/* harmony import */ var _directives_phones_list__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./directives/phones-list */ "./application/directives/phones-list.js");
+/* harmony import */ var _directives_single_phone_directive__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./directives/single-phone-directive */ "./application/directives/single-phone-directive.js");
 
 
 //====================CONTROLLERS===========================//
@@ -112,10 +114,18 @@ __webpack_require__.r(__webpack_exports__);
 //====================SERVICES==============================//
 
 
+//====================FILTERS==============================//
+
+//====================DIRECTIVES==============================//
+
 
 
 angular.module('PhoneApplication.controllers' , []);
 angular.module('PhoneApplication.services' , []);
+angular.module('PhoneApplication.filters' , []);
+angular.module('PhoneApplication.directives' , []);
+
+
 
 angular.module('PhoneApplication.controllers')
     .controller(
@@ -123,23 +133,38 @@ angular.module('PhoneApplication.controllers')
         ['$scope' , 'CartService' , _controllers_CartController__WEBPACK_IMPORTED_MODULE_2__["default"]]
     );
 
+angular.module('PhoneApplication.filters')
+    .filter('SearchPhonesFilter' ,  _filters_SearchPhonesFilter__WEBPACK_IMPORTED_MODULE_5__["default"]); // test | SearchPhonesFilter
+
 angular.module('PhoneApplication.controllers')
     .controller(
-        'SearchController' ,
-        ['$scope' , 'PhoneService' , _controllers_SearchController__WEBPACK_IMPORTED_MODULE_3__["default"]]
+        'ExampleController' ,
+        ['$scope' , 'PhoneService' , ( $scope , PhoneService )=>{
+
+            $scope.searchObject = PhoneService.getSearchObject();
+
+        }]
     );
 
 angular.module('PhoneApplication.services')
-    .service( 'CartService'  , _services_CartService__WEBPACK_IMPORTED_MODULE_4__["default"]);
+    .service( 'CartService'  , _services_CartService__WEBPACK_IMPORTED_MODULE_3__["default"]);
 
 angular.module('PhoneApplication.services')
-    .service( 'PhoneService'  , _services_PhoneService__WEBPACK_IMPORTED_MODULE_5__["default"]);
+    .service( 'PhoneService'  , _services_PhoneService__WEBPACK_IMPORTED_MODULE_4__["default"]);
+
+angular.module('PhoneApplication.directives' )
+    .directive('phonesListDirective' , _directives_phones_list__WEBPACK_IMPORTED_MODULE_6__["default"]);
+
+angular.module('PhoneApplication.directives' )
+    .directive('singlePhoneDirective' , _directives_single_phone_directive__WEBPACK_IMPORTED_MODULE_7__["default"]);
 
 let app = angular.module('PhoneApplication',[
     'ngRoute',
     'LocalStorageModule',
     'PhoneApplication.controllers',
-    'PhoneApplication.services'
+    'PhoneApplication.filters',
+    'PhoneApplication.services',
+    'PhoneApplication.directives'
 
 
 ]);
@@ -157,22 +182,27 @@ app.config( [ '$routeProvider' , '$locationProvider'  , 'localStorageServiceProv
     $routeProvider.when('/' , {
 
         templateUrl: 'templates/catalogue.html',
-        controller: [  '$scope' , 'PhoneService' , _controllers_CatalogueController__WEBPACK_IMPORTED_MODULE_0__["default"] ]
-
-    });
-
-    $routeProvider.when('/search' , {
-
-        templateUrl: 'templates/catalogue.html',
-        controller: [  '$scope' , 'PhoneService' , _controllers_CatalogueController__WEBPACK_IMPORTED_MODULE_0__["default"] ]
-
+        controller: [  '$scope' , 'PhoneService' , 'phones' ,_controllers_CatalogueController__WEBPACK_IMPORTED_MODULE_0__["default"] ],
+        resolve: {
+            'phones': [ 'PhoneService' , function (PhoneService){
+                return PhoneService.getPhones(`phones/phones.json`);
+            }]
+        }
     });
 
     $routeProvider.when('/single-phone/:phoneID' , {
 
-        controller: [ '$scope', '$routeParams' , 'CartService' , 'PhoneService' , _controllers_PhoneController__WEBPACK_IMPORTED_MODULE_1__["default"]],
-        templateUrl: 'templates/single-phone.html'
+        controller: [ '$scope', 'phone' ,  _controllers_PhoneController__WEBPACK_IMPORTED_MODULE_1__["default"]],
+        templateUrl: 'templates/single-phone.html',
+        resolve: {
+            'phone': [ 'PhoneService' ,  '$route' , function ( PhoneService , $route ){
 
+                let id = $route.current.params.phoneID;
+
+                return PhoneService.getSinglePhone(`phones/${id}.json`);
+
+            } ]
+        }
     });
 
 } ] );
@@ -228,9 +258,11 @@ __webpack_require__.r(__webpack_exports__);
 
 class CatalogueController{
 
-    constructor( $scope , PhoneService){
+    constructor( $scope , PhoneService, phones){
 
-        $scope.phones = PhoneService.getPhonesInApp();
+        $scope.searchObject = PhoneService.getSearchObject();
+
+        $scope.phones = phones;
 
       // PhoneService.getPhones(`phones/phones.json`, "")
             //.then( phones => {
@@ -264,81 +296,178 @@ __webpack_require__.r(__webpack_exports__);
 
 class PhoneController{
 
-    constructor($scope, $routeParams , CartService , PhoneService){
+        constructor($scope , phone ){
 
-        let id = $routeParams.phoneID;
-        $scope.isLoaded = false;
+            $scope.phone = phone;
+            $scope.thumbnail = `${phone.images[0]}`;
 
-        $scope.addPhoneToCart = function ( phone ){
-
-            CartService.addPhone( phone );
-        };
-
-        $scope.isContent = function(){
-
-            return $scope.isLoaded ? 'templates/script.html' : '';
-
-        };
-
-        PhoneService.getSinglePhone(`phones/${id}.json`)
-            .then(
-                phone => {
-                    $scope.phone = phone;
-                    $scope.thumbnail = phone.images[0];
-                    $scope.isLoaded = true;
-                    $scope.$apply();
-                }
-            )
-            .catch( error => {
-                console.log('error' , error);
-            } );
-
-
-
-        $scope.setThumbnail = this._setThumbnail.bind( this, $scope );
-
-    }
-
-    _setThumbnail($scope , photo ){
-
-        $scope.thumbnail = photo;
-
-    }//_setThumbnail
+        }
+    //     $scope.phone = phone;
+    //     $scope.isLoaded = false;
+    //     $scope.thumbnail = phone.images[0];
+    //
+    //     $scope.addPhoneToCart = function ( phone ){
+    //
+    //         CartService.addPhone( phone );
+    //     };
+    //
+    //
+    //
+    //     $scope.isContent = function(){
+    //
+    //         return $scope.isLoaded ? 'templates/script.html' : '';
+    //
+    //     };
+    //
+    //     // PhoneService.getSinglePhone(`phones/${id}.json`)
+    //     //     .then(
+    //     //         phone => {
+    //     //             $scope.phone = phone;
+    //     //             $scope.thumbnail = phone.images[0];
+    //     //             $scope.isLoaded = true;
+    //     //             $scope.$apply();
+    //     //         }
+    //     //     )
+    //     //     .catch( error => {
+    //     //         console.log('error' , error);
+    //     //     } );
+    //
+    //
+    //
+    //     $scope.setThumbnail = this._setThumbnail.bind( this, $scope );
+    //
+    // }
+    //
+    // _setThumbnail($scope , photo ){
+    //
+    //     $scope.thumbnail = photo;
+    //
+    // }//_setThumbnail
 
 }
 
 /***/ }),
 
-/***/ "./application/controllers/SearchController.js":
-/*!*****************************************************!*\
-  !*** ./application/controllers/SearchController.js ***!
-  \*****************************************************/
+/***/ "./application/directives/phones-list.js":
+/*!***********************************************!*\
+  !*** ./application/directives/phones-list.js ***!
+  \***********************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return SearchController; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return PhonesList; });
 
 
-class SearchController{
+function PhonesList() {
 
-    constructor($scope, PhoneService){
+    return {
 
-        $scope.searchChange = function ( ){
-            var text = document.getElementById("searchText").value;
-            //alert(text);
-            PhoneService.seachPhones(text);
-        };
-        $scope.searchBack = function ( ){
+        restrict: 'EAC',
+        scope:{
+            queryObject: '=searchObject',
+            phones: '=phonesListArray' // -> in html attribute === phones-list-array="phones"
+            //phones: '=' -> in html attribute === phones="phones"
+        },//scope
+        templateUrl: 'templates/directives/phones-list.html',
+        controller: ['$scope' , function ( $scope ){
 
-            PhoneService.seachPhones("");
-        };
-    }
+            $scope.phoneImageClick = function ( url ){
 
+                alert(url);
 
+            }
+
+        }]
+
+    }//return
 
 }
+
+/***/ }),
+
+/***/ "./application/directives/single-phone-directive.js":
+/*!**********************************************************!*\
+  !*** ./application/directives/single-phone-directive.js ***!
+  \**********************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return SinglePhoneDirective; });
+
+
+
+function SinglePhoneDirective(){
+
+    return{
+
+        restrict: 'EA',
+        scope:{
+            phone:'=',
+            thumbnail: '='
+        },
+        templateUrl: 'templates/directives/single-phone-directive.html',
+        controller: [ '$scope' , 'CartService' , function ( $scope , CartService){
+
+            $scope.addPhoneToCart = function ( phone ){
+                CartService.addPhone( phone );
+            };
+
+            $scope.setThumbnail = function (photo){
+                $scope.thumbnail = photo;
+            };
+
+        } ],
+        link: function ( scope, element, attrs, controller ){
+
+            $(document).ready( ()=>{
+
+                $('#PhonesOwlCarousel').owlCarousel({
+                    items: 2,
+                    nav: true,
+                    autoWidth: true,
+                    margin: 10
+                });
+
+            } );
+
+        },
+
+    }
+
+}
+
+/***/ }),
+
+/***/ "./application/filters/SearchPhonesFilter.js":
+/*!***************************************************!*\
+  !*** ./application/filters/SearchPhonesFilter.js ***!
+  \***************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return SearchPhonesFilter; });
+
+
+function SearchPhonesFilter(){
+
+    return function ( phones , searchString ){
+
+        return phones.filter(
+            p =>
+                p.name.toLowerCase()
+                    .indexOf( searchString.toLowerCase() ) !== -1
+        );
+
+    }// fd
+
+}//SearchPhonesFilter
+
 
 /***/ }),
 
@@ -450,59 +579,13 @@ class PhoneService{
     constructor( $http ){
 
         this.$http = $http;
-        this.allPhones=[];
-        this.phonesInApp=[];
-
-        $http.get(`phones/phones.json`)
-            .then( response => {
-                this.allPhones = response.data;
-
-                for ( let i = 0 ; i <this.allPhones.length ;  i++ ){
-
-
-                    this.phonesInApp.push(this.allPhones[i]);
-
-                }//for i
-            } )
-            .catch( error => {
-                console.log("EXCEPTION: " , error)
-            } )
-
+        this.searchObject = {
+            'searchString': ''
+        };
 
     }
 
-    getPhonesInApp(){
-
-        return this.phonesInApp;
-    }
-    seachPhones( seachString ){
-
-
-        let searchPhones = [];
-        if(seachString===""){
-
-            this.phonesInApp = this.allPhones;
-        }//if
-        else{
-            for ( let i = 0 ; i < this.phonesInApp.length ;  i++ ){
-
-                let p = this.phonesInApp[i];
-
-                if(p.name.indexOf(seachString)>-1 ) {
-
-                    searchPhones.push(p);
-                }//if
-
-            }//for i
-
-            this.phonesInApp = searchPhones;
-            //alert(this.phonesInApp.length);
-            }//else
-
-    }
-
-    async getSinglePhone( url ){
-
+    async getPhones( url ){
 
         try{
             let result = await this.$http.get( url );
@@ -513,13 +596,31 @@ class PhoneService{
         catch(ex){
 
             console.log("Exception: getPhones" , ex);
+            return [];
+
+        }//catch
+    }
+
+    getSearchObject(){
+        return this.searchObject;
+    }
+
+    async getSinglePhone( url ){
+
+        try{
+            let result = await this.$http.get( url );
+
+            return result.data;
+
+        }//try
+        catch(ex){
+
+            console.log("Exception: getSinglePhone: " , ex);
             return null;
 
         }//catch
 
     }
-
-
 
 }
 

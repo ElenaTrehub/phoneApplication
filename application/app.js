@@ -4,15 +4,23 @@
 import CatalogueController from './controllers/CatalogueController';
 import PhoneController from './controllers/PhoneController';
 import CartController from './controllers/CartController';
-import SearchController from './controllers/SearchController';
+
 
 //====================SERVICES==============================//
 import CartService from './services/CartService';
 import PhoneService from './services/PhoneService';
-
+//====================FILTERS==============================//
+import SearchPhonesFilter from './filters/SearchPhonesFilter';
+//====================DIRECTIVES==============================//
+import PhonesList from './directives/phones-list';
+import SinglePhoneDirective from './directives/single-phone-directive';
 
 angular.module('PhoneApplication.controllers' , []);
 angular.module('PhoneApplication.services' , []);
+angular.module('PhoneApplication.filters' , []);
+angular.module('PhoneApplication.directives' , []);
+
+
 
 angular.module('PhoneApplication.controllers')
     .controller(
@@ -20,10 +28,17 @@ angular.module('PhoneApplication.controllers')
         ['$scope' , 'CartService' , CartController]
     );
 
+angular.module('PhoneApplication.filters')
+    .filter('SearchPhonesFilter' ,  SearchPhonesFilter); // test | SearchPhonesFilter
+
 angular.module('PhoneApplication.controllers')
     .controller(
-        'SearchController' ,
-        ['$scope' , 'PhoneService' , SearchController]
+        'ExampleController' ,
+        ['$scope' , 'PhoneService' , ( $scope , PhoneService )=>{
+
+            $scope.searchObject = PhoneService.getSearchObject();
+
+        }]
     );
 
 angular.module('PhoneApplication.services')
@@ -32,11 +47,19 @@ angular.module('PhoneApplication.services')
 angular.module('PhoneApplication.services')
     .service( 'PhoneService'  , PhoneService);
 
+angular.module('PhoneApplication.directives' )
+    .directive('phonesListDirective' , PhonesList);
+
+angular.module('PhoneApplication.directives' )
+    .directive('singlePhoneDirective' , SinglePhoneDirective);
+
 let app = angular.module('PhoneApplication',[
     'ngRoute',
     'LocalStorageModule',
     'PhoneApplication.controllers',
-    'PhoneApplication.services'
+    'PhoneApplication.filters',
+    'PhoneApplication.services',
+    'PhoneApplication.directives'
 
 
 ]);
@@ -54,22 +77,27 @@ app.config( [ '$routeProvider' , '$locationProvider'  , 'localStorageServiceProv
     $routeProvider.when('/' , {
 
         templateUrl: 'templates/catalogue.html',
-        controller: [  '$scope' , 'PhoneService' , CatalogueController ]
-
-    });
-
-    $routeProvider.when('/search' , {
-
-        templateUrl: 'templates/catalogue.html',
-        controller: [  '$scope' , 'PhoneService' , CatalogueController ]
-
+        controller: [  '$scope' , 'PhoneService' , 'phones' ,CatalogueController ],
+        resolve: {
+            'phones': [ 'PhoneService' , function (PhoneService){
+                return PhoneService.getPhones(`phones/phones.json`);
+            }]
+        }
     });
 
     $routeProvider.when('/single-phone/:phoneID' , {
 
-        controller: [ '$scope', '$routeParams' , 'CartService' , 'PhoneService' , PhoneController],
-        templateUrl: 'templates/single-phone.html'
+        controller: [ '$scope', 'phone' ,  PhoneController],
+        templateUrl: 'templates/single-phone.html',
+        resolve: {
+            'phone': [ 'PhoneService' ,  '$route' , function ( PhoneService , $route ){
 
+                let id = $route.current.params.phoneID;
+
+                return PhoneService.getSinglePhone(`phones/${id}.json`);
+
+            } ]
+        }
     });
 
 } ] );

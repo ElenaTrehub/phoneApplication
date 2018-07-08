@@ -2,9 +2,11 @@
 
 export default class CatalogueController{
 
-    constructor( $scope , PhoneService){
+    constructor( $scope , PhoneService, phones){
 
-        $scope.phones = PhoneService.getPhonesInApp();
+        $scope.searchObject = PhoneService.getSearchObject();
+
+        $scope.phones = phones;
 
       // PhoneService.getPhones(`phones/phones.json`, "")
             //.then( phones => {
