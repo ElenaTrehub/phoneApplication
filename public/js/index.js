@@ -98,11 +98,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _controllers_CatalogueController__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./controllers/CatalogueController */ "./application/controllers/CatalogueController.js");
 /* harmony import */ var _controllers_PhoneController__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./controllers/PhoneController */ "./application/controllers/PhoneController.js");
 /* harmony import */ var _controllers_CartController__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./controllers/CartController */ "./application/controllers/CartController.js");
-/* harmony import */ var _services_CartService__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./services/CartService */ "./application/services/CartService.js");
-/* harmony import */ var _services_PhoneService__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./services/PhoneService */ "./application/services/PhoneService.js");
-/* harmony import */ var _filters_SearchPhonesFilter__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./filters/SearchPhonesFilter */ "./application/filters/SearchPhonesFilter.js");
-/* harmony import */ var _directives_phones_list__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./directives/phones-list */ "./application/directives/phones-list.js");
-/* harmony import */ var _directives_single_phone_directive__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./directives/single-phone-directive */ "./application/directives/single-phone-directive.js");
+/* harmony import */ var _controllers_CartViewController__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./controllers/CartViewController */ "./application/controllers/CartViewController.js");
+/* harmony import */ var _services_CartService__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./services/CartService */ "./application/services/CartService.js");
+/* harmony import */ var _services_PhoneService__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./services/PhoneService */ "./application/services/PhoneService.js");
+/* harmony import */ var _filters_SearchPhonesFilter__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./filters/SearchPhonesFilter */ "./application/filters/SearchPhonesFilter.js");
+/* harmony import */ var _directives_phones_list__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./directives/phones-list */ "./application/directives/phones-list.js");
+/* harmony import */ var _directives_single_phone_directive__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./directives/single-phone-directive */ "./application/directives/single-phone-directive.js");
 
 
 //====================CONTROLLERS===========================//
@@ -120,6 +121,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 angular.module('PhoneApplication.controllers' , []);
 angular.module('PhoneApplication.services' , []);
 angular.module('PhoneApplication.filters' , []);
@@ -134,7 +136,7 @@ angular.module('PhoneApplication.controllers')
     );
 
 angular.module('PhoneApplication.filters')
-    .filter('SearchPhonesFilter' ,  _filters_SearchPhonesFilter__WEBPACK_IMPORTED_MODULE_5__["default"]); // test | SearchPhonesFilter
+    .filter('SearchPhonesFilter' ,  _filters_SearchPhonesFilter__WEBPACK_IMPORTED_MODULE_6__["default"]); // test | SearchPhonesFilter
 
 angular.module('PhoneApplication.controllers')
     .controller(
@@ -147,16 +149,16 @@ angular.module('PhoneApplication.controllers')
     );
 
 angular.module('PhoneApplication.services')
-    .service( 'CartService'  , _services_CartService__WEBPACK_IMPORTED_MODULE_3__["default"]);
+    .service( 'CartService'  , _services_CartService__WEBPACK_IMPORTED_MODULE_4__["default"]);
 
 angular.module('PhoneApplication.services')
-    .service( 'PhoneService'  , _services_PhoneService__WEBPACK_IMPORTED_MODULE_4__["default"]);
+    .service( 'PhoneService'  , _services_PhoneService__WEBPACK_IMPORTED_MODULE_5__["default"]);
 
 angular.module('PhoneApplication.directives' )
-    .directive('phonesListDirective' , _directives_phones_list__WEBPACK_IMPORTED_MODULE_6__["default"]);
+    .directive('phonesListDirective' , _directives_phones_list__WEBPACK_IMPORTED_MODULE_7__["default"]);
 
 angular.module('PhoneApplication.directives' )
-    .directive('singlePhoneDirective' , _directives_single_phone_directive__WEBPACK_IMPORTED_MODULE_7__["default"]);
+    .directive('singlePhoneDirective' , _directives_single_phone_directive__WEBPACK_IMPORTED_MODULE_8__["default"]);
 
 let app = angular.module('PhoneApplication',[
     'ngRoute',
@@ -205,6 +207,17 @@ app.config( [ '$routeProvider' , '$locationProvider'  , 'localStorageServiceProv
         }
     });
 
+        $routeProvider.when('/cart' , {
+
+            controller: [ '$scope', 'CartService','phones', _controllers_CartViewController__WEBPACK_IMPORTED_MODULE_3__["default"]],
+            templateUrl: 'templates/cart-view.html',
+            resolve: {
+                'phones': [ 'PhoneService' , function (PhoneService){
+                    return PhoneService.getPhones(`phones/phones.json`);
+                }]
+            }
+        });
+
 } ] );
 
 app.run();
@@ -241,6 +254,80 @@ class CartController{
     }
 
 };
+
+/***/ }),
+
+/***/ "./application/controllers/CartViewController.js":
+/*!*******************************************************!*\
+  !*** ./application/controllers/CartViewController.js ***!
+  \*******************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return CartViewController; });
+
+
+
+class CartViewController{
+
+    constructor($scope, CartService, phones){
+
+        let phonesSimple = CartService.getCart();
+        let phonesApp = phones;
+
+        $scope.phonesInCart = (function () {
+
+            let phonesIbCart = [];
+
+            for ( let i = 0 ; i < phonesApp.length ;  i++ ){
+
+                let p = phonesApp[i];
+
+                for(let j = 0 ; j < phonesSimple.length ;  j++ ){
+
+                    let ps = phonesSimple[j];
+
+                    if(p.id === ps.id){
+
+                        phonesIbCart.push({'phone': phonesApp[i],
+                            'amount' : phonesSimple[j].amount});
+
+                    }//if
+
+                }//for j
+
+
+            }//for i
+
+            return phonesIbCart;
+        })();
+
+        $scope.AddPhone = function(phone){
+            phone.amount +=1;
+            CartService.addPhone(phone.phone);
+        }//$scope.AddPhone
+
+
+        $scope.RemovePhone = function(phone, index){
+
+            if(phone.amount>1){
+                phone.amount -=1;
+                CartService.removeOnePhone(phone.phone);
+            }
+            else{
+                CartService.removePhone(index);
+                $scope.phonesInCart.splice( index , 1 );
+            }
+
+
+        }//$scope.AddPhone
+    }
+
+
+
+}
 
 /***/ }),
 
@@ -550,6 +637,25 @@ class CartService{
         this.cart.length = 0;
 
     }
+
+    removeOnePhone(phone){
+
+        for ( let i = 0 ; i < this.cart.length ;  i++ ){
+
+            let p = this.cart[i];
+
+            if(p.id === phone.id){
+
+                p.amount--;
+
+                break;
+
+            }//if
+
+        }//for i
+
+        this.localStorageService.set( 'cart' , this.cart );
+    }//removeOnePhone
 
     removePhone( index ){
 

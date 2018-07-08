@@ -68,6 +68,25 @@ export default class CartService{
 
     }
 
+    removeOnePhone(phone){
+
+        for ( let i = 0 ; i < this.cart.length ;  i++ ){
+
+            let p = this.cart[i];
+
+            if(p.id === phone.id){
+
+                p.amount--;
+
+                break;
+
+            }//if
+
+        }//for i
+
+        this.localStorageService.set( 'cart' , this.cart );
+    }//removeOnePhone
+
     removePhone( index ){
 
         this.cart.splice( index , 1 );

@@ -1,0 +1,16 @@
+<h1 ng-if="phonesInCart.length===0">Ваша корзина пуста! </h1>
+<a ng-href="/phoneApplication/public/">Home</a>
+<ul class="phones">
+    <li ng-repeat="phone in phonesInCart" class="thumbnail">
+        <a ng-href="single-phone/{{phone.phone.id}}" class="thumb">
+            <img ng-click="phoneImageClick(phone.phone.imageUrl)" alt="{{phone.phone.name}}" ng-src="{{phone.phone.imageUrl}}">
+        </a>
+        <a ng-href="single-phone/{{phone.phone.id}}"ng-bind-template="{{phone.phone.name}} ({{phone.amount}})" ></a>
+       <p><button ng-click="AddPhone(phone)">Добавить единицу товара</button>  <button ng-click="RemovePhone(phone, $index)">Удалить единицу товара</button></p>
+        <p ng-bind="phone.phone.snippet" ></p>
+
+
+
+    </li>
+
+</ul>

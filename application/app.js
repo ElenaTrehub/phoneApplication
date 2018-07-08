@@ -4,7 +4,7 @@
 import CatalogueController from './controllers/CatalogueController';
 import PhoneController from './controllers/PhoneController';
 import CartController from './controllers/CartController';
-
+import CartViewController from './controllers/CartViewController';
 
 //====================SERVICES==============================//
 import CartService from './services/CartService';
@@ -14,6 +14,7 @@ import SearchPhonesFilter from './filters/SearchPhonesFilter';
 //====================DIRECTIVES==============================//
 import PhonesList from './directives/phones-list';
 import SinglePhoneDirective from './directives/single-phone-directive';
+
 
 angular.module('PhoneApplication.controllers' , []);
 angular.module('PhoneApplication.services' , []);
@@ -99,6 +100,17 @@ app.config( [ '$routeProvider' , '$locationProvider'  , 'localStorageServiceProv
             } ]
         }
     });
+
+        $routeProvider.when('/cart' , {
+
+            controller: [ '$scope', 'CartService','phones', CartViewController],
+            templateUrl: 'templates/cart-view.html',
+            resolve: {
+                'phones': [ 'PhoneService' , function (PhoneService){
+                    return PhoneService.getPhones(`phones/phones.json`);
+                }]
+            }
+        });
 
 } ] );
 
