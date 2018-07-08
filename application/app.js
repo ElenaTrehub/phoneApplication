@@ -34,17 +34,22 @@ angular.module('PhoneApplication.services')
 
 let app = angular.module('PhoneApplication',[
     'ngRoute',
+    'LocalStorageModule',
     'PhoneApplication.controllers',
-    'PhoneApplication.services',
-    'ngCookies'
+    'PhoneApplication.services'
+
 
 ]);
 
 
 
-app.config( [ '$routeProvider' , '$locationProvider'  , ($routeProvider , $locationProvider)=>{
+app.config( [ '$routeProvider' , '$locationProvider'  , 'localStorageServiceProvider' ,
+    ($routeProvider , $locationProvider, localStorageServiceProvider)=>{
 
     $locationProvider.html5Mode(true);
+
+    localStorageServiceProvider.setStorageCookie( 7 , '/' );
+    localStorageServiceProvider.setStorageCookieDomain('localhost');
 
     $routeProvider.when('/' , {
 

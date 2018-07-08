@@ -10,9 +10,10 @@
 
         <p ng-bind="phone.description"></p>
 
-        <ul class="phone-thumbs">
+        <ul id="PhonesOwlCarousel" class="owl-theme owl-carousel">
             <li ng-repeat="photo in phone.images">
-                <img ng-click="setThumbnail(photo)" ng-src="{{photo}}">
+                <img ng-src="{{photo}}">
+                <div ng-include="isContent()"></div>
             </li>
         </ul>
 

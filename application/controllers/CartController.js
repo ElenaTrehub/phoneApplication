@@ -10,6 +10,11 @@ export default class CartController{
             CartService.removePhone( index );
         };
 
+        $scope.ClearCart = function (){
+
+            CartService.clearCart();
+
+        };
     }
 
 };

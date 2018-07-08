@@ -137,17 +137,22 @@ angular.module('PhoneApplication.services')
 
 let app = angular.module('PhoneApplication',[
     'ngRoute',
+    'LocalStorageModule',
     'PhoneApplication.controllers',
-    'PhoneApplication.services',
-    'ngCookies'
+    'PhoneApplication.services'
+
 
 ]);
 
 
 
-app.config( [ '$routeProvider' , '$locationProvider'  , ($routeProvider , $locationProvider)=>{
+app.config( [ '$routeProvider' , '$locationProvider'  , 'localStorageServiceProvider' ,
+    ($routeProvider , $locationProvider, localStorageServiceProvider)=>{
 
     $locationProvider.html5Mode(true);
+
+    localStorageServiceProvider.setStorageCookie( 7 , '/' );
+    localStorageServiceProvider.setStorageCookieDomain('localhost');
 
     $routeProvider.when('/' , {
 
@@ -198,6 +203,11 @@ class CartController{
             CartService.removePhone( index );
         };
 
+        $scope.ClearCart = function (){
+
+            CartService.clearCart();
+
+        };
     }
 
 };
@@ -257,10 +267,17 @@ class PhoneController{
     constructor($scope, $routeParams , CartService , PhoneService){
 
         let id = $routeParams.phoneID;
+        $scope.isLoaded = false;
 
         $scope.addPhoneToCart = function ( phone ){
 
             CartService.addPhone( phone );
+        };
+
+        $scope.isContent = function(){
+
+            return $scope.isLoaded ? 'templates/script.html' : '';
+
         };
 
         PhoneService.getSinglePhone(`phones/${id}.json`)
@@ -268,12 +285,15 @@ class PhoneController{
                 phone => {
                     $scope.phone = phone;
                     $scope.thumbnail = phone.images[0];
+                    $scope.isLoaded = true;
                     $scope.$apply();
                 }
             )
             .catch( error => {
                 console.log('error' , error);
             } );
+
+
 
         $scope.setThumbnail = this._setThumbnail.bind( this, $scope );
 
@@ -337,11 +357,18 @@ __webpack_require__.r(__webpack_exports__);
 
 class CartService{
 
-    constructor($cookies){
+    constructor( localStorageService ){
 
-        this.cart = [];
+        if(localStorageService.get('cart')){
+            this.cart = localStorageService.get('cart');
+        }//if
+        else{
+            this.cart = [];
+        }//else
 
-    }
+        this.localStorageService = localStorageService;
+
+    }//constructor
 
     getCart(){
         return this.cart;
@@ -355,7 +382,6 @@ class CartService{
 
         if(!exists){
             this.cart.push( this._getSimplePhone( phone ) );
-            $cookies.phones.push(this._getSimplePhone( phone ));
         }//if
         else{
 
@@ -374,7 +400,9 @@ class CartService{
             }//for i
 
         }//else
-        console.log('phones' , $cookies.phones);
+
+        this.localStorageService.set( 'cart' , this.cart );
+
     }
 
     _getSimplePhone( phone ){
@@ -387,14 +415,21 @@ class CartService{
 
     }
 
+    clearCart(){
+
+        this.localStorageService.clearAll();
+        this.cart.length = 0;
+
+    }
+
     removePhone( index ){
 
         this.cart.splice( index , 1 );
-    }
+        this.localStorageService.set( 'cart' , this.cart );
 
-    
+    }//removePhone
+
 }
-
 
 /***/ }),
 

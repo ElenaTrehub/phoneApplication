@@ -3,11 +3,18 @@
 
 export default class CartService{
 
-    constructor($cookies){
+    constructor( localStorageService ){
 
-        this.cart = [];
+        if(localStorageService.get('cart')){
+            this.cart = localStorageService.get('cart');
+        }//if
+        else{
+            this.cart = [];
+        }//else
 
-    }
+        this.localStorageService = localStorageService;
+
+    }//constructor
 
     getCart(){
         return this.cart;
@@ -21,7 +28,6 @@ export default class CartService{
 
         if(!exists){
             this.cart.push( this._getSimplePhone( phone ) );
-            $cookies.phones.push(this._getSimplePhone( phone ));
         }//if
         else{
 
@@ -40,7 +46,9 @@ export default class CartService{
             }//for i
 
         }//else
-        console.log('phones' , $cookies.phones);
+
+        this.localStorageService.set( 'cart' , this.cart );
+
     }
 
     _getSimplePhone( phone ){
@@ -53,10 +61,18 @@ export default class CartService{
 
     }
 
+    clearCart(){
+
+        this.localStorageService.clearAll();
+        this.cart.length = 0;
+
+    }
+
     removePhone( index ){
 
         this.cart.splice( index , 1 );
-    }
+        this.localStorageService.set( 'cart' , this.cart );
 
-    
+    }//removePhone
+
 }
